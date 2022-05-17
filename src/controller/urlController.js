@@ -13,7 +13,7 @@ try{
       }
 
 
- const longUrl=data.longUrl.toLowerCase()
+ const longUrl=data.longUrl
 const baseUrl="http://localhost:3000"
 
 if (!validUrl.isUri(baseUrl)) {
