@@ -5,15 +5,15 @@ const shortid = require('shortid');
 const createUrl=async (req,res) =>{
 try{
    
+    let data=req.body
 
 
-    if (Object.keys(req.body).length == 0) {
-        return res.status(400).send({ status: false, message: "Feild Can't Empty.Please Enter Some Details" });
+    if (Object.keys(data).length == 0) {
+        return res.status(400).send({ status: false, message: "Oops, You forgot to enter the data" });
       }
 
-      //const obj={}
 
- const longUrl=req.body.longUrl
+ const longUrl=data.longUrl.toLowerCase()
 const baseUrl="http://localhost:3000"
 
 if (!validUrl.isUri(baseUrl)) {
@@ -29,20 +29,16 @@ let uniqueLongUrl=await urlModel.findOne({longUrl})
 if(uniqueLongUrl){
     return res.status(400).send({ status: false, message: `${longUrl} this urlcode  Already exist.Please,try again with another url` })
 }
-const urlCode=shortid.generate()
+const urlCode=shortid.generate().toLowerCase()
 
 const shortUrl=baseUrl+'/'+urlCode
 
+data.urlCode=urlCode
+data.shortUrl=shortUrl
 
+const url=await urlModel.create(data)
 
-const Data=  
-{
-    urlCode: urlCode,
-    shortUrl: shortUrl,
-    longUrl: longUrl
-}
-const url=await urlModel.create(Data)
-return res.status(201).send({ status: true, message: 'Document created', data: Data })
+return res.status(201).send({ status: true, message: 'URL create successfully', data:data})
 }
 catch (err) {
     res.status(500).send({ status: false, message: err.message });
