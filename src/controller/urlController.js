@@ -50,7 +50,6 @@ if (!validUrl.isUri(baseUrl)) {
 }
 
 if (!validUrl.isUri(longUrl)) { return res.status(400).send({ status: false, message: 'Please provide a valid longurl' }) }
-//if (!validUrl.isWebUri(longUrl)) { return res.status(400).send({ status: false, message: 'Please provide a valid URL' }) }
 let uniqueLongUrl=await urlModel.findOne({longUrl})
 if(uniqueLongUrl){
     return res.status(400).send({ status: false, message: `${longUrl} this urlcode  Already exist.Please,try again with another url` })
@@ -78,29 +77,30 @@ catch (err) {
     try{
 let urlCode= req.params.urlCode
  let findUrl=await GET_ASYNC(urlCode)
-let newurl=JSON.stringify(urlCode)
-if(!newurl){
+let newurl=JSON.parse(findUrl)
+if(newurl){
  
-return res.send({status :false,msg:"not found url"})
-  //res.status(302).redirect(findUrl)
+ return res.status(302).redirect(newurl)
 }
 else {
 let getUrlCode=await urlModel.findOne({urlCode:urlCode})
 if(!getUrlCode) {
 return  res.status(404).send({ status: false, message: "Urlcode Not Found" });
-}
-
+} 
+console.log(getUrlCode)
   //  SETTING : url data in cache
- // await SET_ASYNC(`${urlCode}`, JSON.stringify(getUrlCode))
-  
+  await SET_ASYNC(`${urlCode}`, JSON.stringify(getUrlCode.longUrl))
+ 
 return res.status(302).redirect(getUrlCode.longUrl);
-}}
+
+}
+}
 catch (err) {
     res.status(500).send({ status: false, message: err.message });
   }
 }  
 
-
+//=================================/////////////////
 
 module.exports.createUrl=createUrl
 module.exports.reDirectUrl=reDirectUrl

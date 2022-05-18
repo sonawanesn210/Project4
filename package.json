@@ -27,5 +27,8 @@
     "url": "^0.11.0",
     "valid": "^0.1.1",
     "valid-url": "^1.0.9"
+  },
+  "devDependencies": {
+    "@types/redis": "^4.0.11"
   }
 }
