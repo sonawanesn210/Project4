@@ -74,20 +74,31 @@ catch (err) {
 
 
 //=================================GET /:urlCode=========================================//
- const reDirectUrl=async (req,res) =>{
+  const reDirectUrl=async (req,res) =>{
     try{
 let urlCode= req.params.urlCode
-if(urlCode){
+ let findUrl=await GET_ASYNC(urlCode)
+let newurl=JSON.stringify(urlCode)
+if(!newurl){
+ 
+return res.send({status :false,msg:"not found url"})
+  //res.status(302).redirect(findUrl)
+}
+else {
 let getUrlCode=await urlModel.findOne({urlCode:urlCode})
 if(!getUrlCode) {
 return  res.status(404).send({ status: false, message: "Urlcode Not Found" });
 }
+
+  //  SETTING : url data in cache
+ // await SET_ASYNC(`${urlCode}`, JSON.stringify(getUrlCode))
+  
 return res.status(302).redirect(getUrlCode.longUrl);
 }}
 catch (err) {
     res.status(500).send({ status: false, message: err.message });
   }
-} 
+}  
 
 
 
