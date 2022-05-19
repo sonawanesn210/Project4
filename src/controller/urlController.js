@@ -61,9 +61,14 @@ const shortUrl=baseUrl+'/'+urlCode
 data.urlCode=urlCode
 data.shortUrl=shortUrl
 
-const url=await urlModel.create(data)
 
-return res.status(201).send({ status: true, message: 'URL create successfully', data:data})
+const url=await urlModel.create(data)
+let Data={
+  longUrl: url.longUrl,
+  shortUrl: url.shortUrl,
+  urlCode:url. urlCode
+}
+return res.status(201).send({ status: true, message: 'URL create successfully', data: Data })
 }
 catch (err) {
     res.status(500).send({ status: false, message: err.message });
@@ -77,7 +82,10 @@ catch (err) {
     try{
 let urlCode= req.params.urlCode
  let findUrl=await GET_ASYNC(urlCode)
+ 
 let newurl=JSON.parse(findUrl)
+console.log(urlCode)
+console.log(findUrl)
 if(newurl){
  
  return res.status(302).redirect(newurl)
@@ -90,17 +98,18 @@ return  res.status(404).send({ status: false, message: "Urlcode Not Found" });
 console.log(getUrlCode)
   //  SETTING : url data in cache
   await SET_ASYNC(`${urlCode}`, JSON.stringify(getUrlCode.longUrl))
- 
+  
 return res.status(302).redirect(getUrlCode.longUrl);
 
 }
+
 }
 catch (err) {
     res.status(500).send({ status: false, message: err.message });
   }
 }  
 
-//=================================/////////////////
+
 
 module.exports.createUrl=createUrl
 module.exports.reDirectUrl=reDirectUrl
