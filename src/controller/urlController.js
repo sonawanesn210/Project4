@@ -50,10 +50,17 @@ if (!validUrl.isUri(baseUrl)) {
 }
 
 if (!validUrl.isUri(longUrl)) { return res.status(400).send({ status: false, message: 'Please provide a valid longurl' }) }
-let uniqueLongUrl=await urlModel.findOne({longUrl})
-if(uniqueLongUrl){
-    return res.status(400).send({ status: false, message: `${longUrl} this urlcode  Already exist.Please,try again with another url` })
+let cacheUrl =await GET_ASYNC(longUrl)
+if(cacheUrl){
+
+  return res.status(200).send({status:true,msg:"Data from Redis ->",data:JSON.parse(cacheUrl)})
 }
+let uniqueLongUrl=await urlModel.findOne({longUrl}).select({_id:0, createdAt:0, updatedAt: 0, __v:0})
+if(uniqueLongUrl){
+         await SET_ASYNC(`${longUrl}`, JSON.stringify(uniqueLongUrl))
+
+         return res.status(200).send({status: true, message: "Data from DB set in cache ->", data: uniqueLongUrl})
+  }
 const urlCode=shortid.generate().toLowerCase()
 
 const shortUrl=baseUrl+'/'+urlCode
@@ -84,24 +91,22 @@ let urlCode= req.params.urlCode
  let findUrl=await GET_ASYNC(urlCode)
  
 let newurl=JSON.parse(findUrl)
-console.log(urlCode)
-console.log(findUrl)
 if(newurl){
  
  return res.status(302).redirect(newurl)
 }
-else {
+//else {
 let getUrlCode=await urlModel.findOne({urlCode:urlCode})
 if(!getUrlCode) {
 return  res.status(404).send({ status: false, message: "Urlcode Not Found" });
 } 
-console.log(getUrlCode)
+//console.log(getUrlCode)
   //  SETTING : url data in cache
   await SET_ASYNC(`${urlCode}`, JSON.stringify(getUrlCode.longUrl))
   
 return res.status(302).redirect(getUrlCode.longUrl);
 
-}
+///}
 
 }
 catch (err) {
