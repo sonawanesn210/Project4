@@ -60,25 +60,33 @@ const createUrl = async (req, res) => {
       urlCode: urlCode
     }
 
-   // let urlcodeAndShortUrl = await urlModel.findOne({ shortUrl: shortUrl, urlCode: urlCode })
+    // let urlcodeAndShortUrl = await urlModel.findOne({ shortUrl: shortUrl, urlCode: urlCode })
     //searching for Urlcode and shorturl in DB
     /* if (urlcodeAndShortUrl) {
       if (urlcodeAndShortUrl.urlCode == urlCode) return res.status(400).send({ status: false, message: "urlcode already exits" })
       if (urlcodeAndShortUrl.shortUrl == shortUrl) return res.status(400).send({ status: false, message: "Shorturl already exits" })
     } */
     let cacheUrl = await GET_ASYNC(longUrl)
-    if (cacheUrl) {
-
-      return res.status(201).send({ status: true, data: JSON.parse(cacheUrl) })
+    
+    let json = JSON.parse(cacheUrl)
+    //console.log(cacheUrl)
+    if (json) {
+  
+      //console.log("json")
+ return res.status(201).send({ status: true, data: json })
     }
-    let uniqueLongUrl = await urlModel.findOne({ longUrl }).select({ _id: 0, createdAt: 0, updatedAt: 0, __v: 0 })
+    let uniqueLongUrl = await urlModel.findOne({ longUrl: longUrl }).select({ _id: 0, createdAt: 0, updatedAt: 0, __v: 0 })
+
+
     if (uniqueLongUrl) {
+      await SET_ASYNC(`${longUrl}`, JSON.stringify(uniqueLongUrl))
       return res.status(200).send({ status: true, data: uniqueLongUrl })
     }
     const url = await urlModel.create(Data)
-
-    await SET_ASYNC(`${longUrl}`, JSON.stringify(uniqueLongUrl))
-    return res.status(201).send({ status: true, message: 'URL create successfully', data: Data })
+    if (url) {
+      await SET_ASYNC(`${longUrl}`, JSON.stringify(Data))
+      return res.status(201).send({ status: true, message: 'URL create successfully', data: Data })
+    }
   }
   catch (err) {
     res.status(500).send({ status: false, message: err.message });
@@ -100,6 +108,7 @@ const reDirectUrl = async (req, res) => {
         return res.status(404).send({ status: false, message: "Urlcode Not Found" });
       }
       await SET_ASYNC(`${urlCode}`, JSON.stringify(getUrlCode.longUrl))
+
     }
     return res.status(302).redirect(newurl)
 
