@@ -39,7 +39,7 @@ const createUrl = async (req, res) => {
     }
 
 
-    const longUrl = data.longUrl
+    const longUrl = data.longUrl.trim()
 
     if (!longUrl) {
       return res.status(400).send({ status: false, message: "Long url is required" });
@@ -60,20 +60,13 @@ const createUrl = async (req, res) => {
       urlCode: urlCode
     }
 
-    // let urlcodeAndShortUrl = await urlModel.findOne({ shortUrl: shortUrl, urlCode: urlCode })
-    //searching for Urlcode and shorturl in DB
-    /* if (urlcodeAndShortUrl) {
-      if (urlcodeAndShortUrl.urlCode == urlCode) return res.status(400).send({ status: false, message: "urlcode already exits" })
-      if (urlcodeAndShortUrl.shortUrl == shortUrl) return res.status(400).send({ status: false, message: "Shorturl already exits" })
-    } */
     let cacheUrl = await GET_ASYNC(longUrl)
     
     let json = JSON.parse(cacheUrl)
     //console.log(cacheUrl)
     if (json) {
   
-      //console.log("json")
- return res.status(201).send({ status: true, data: json })
+ return res.status(200).send({ status: true, data: json })
     }
     let uniqueLongUrl = await urlModel.findOne({ longUrl: longUrl }).select({ _id: 0, createdAt: 0, updatedAt: 0, __v: 0 })
 
@@ -83,10 +76,10 @@ const createUrl = async (req, res) => {
       return res.status(200).send({ status: true, data: uniqueLongUrl })
     }
     const url = await urlModel.create(Data)
-    if (url) {
+    
       await SET_ASYNC(`${longUrl}`, JSON.stringify(Data))
       return res.status(201).send({ status: true, message: 'URL create successfully', data: Data })
-    }
+    
   }
   catch (err) {
     res.status(500).send({ status: false, message: err.message });
